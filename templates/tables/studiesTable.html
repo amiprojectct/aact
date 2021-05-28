@@ -1,0 +1,161 @@
+{% if reports %}
+<div  class="table-responsive">
+    <table class="table table-bordered table-sm" id='studiesTable' style="font-size: 16px;">
+        <thead>
+            <tr>
+            <th>Row</th>
+            <th>
+                <input type="checkbox" id="check_all" class="material-inputs filled-in chk-col-indigo" onclick="selectStudyAll(this)">
+                <label for="check_all" style="font-size: 17px;">Saved</label>
+            </th>
+            <th>Status</th>
+            <th>Study Title</th>
+            <th>Conditions</th>
+            <th>Phase</th>
+            <th>Interventions</th>
+            <th>Locations</th>
+            <th>NCT ID</th>
+            <th></th>
+            <th>Funder Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ forloop.counter|add:reports.start_index|add:'-1' }}</td>
+                
+                <td>
+                    <input type="checkbox" id="{{report.nct_id}}" class="material-inputs filled-in chk-col-indigo" onclick="selectStudy(this,'{{forloop.counter}}')">
+                    <label for="{{report.nct_id}}"></label>
+                </td>
+                <td>{{ report.overall_status }}</td>
+                <td><a target="_blank" href="https://clinicaltrials.gov/ct2/show/{{report.nct_id}}">{{ report.brief_title }}</a></td>
+                <td>
+                    {% if report.conditions.all.count <= 4 %}
+                        <ul style="padding-inline-start: 15px;">
+                            {% for condition in report.conditions.all %}
+                                <li>{{condition.name}}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <ul style="padding-inline-start: 15px;">
+                            {% for condition in report.conditions.all %}
+                                {% if forloop.counter <= 4 %}
+                                    <li>{{condition.name}}</li>
+                                {% else %}
+                                    <li class="{{report.nct_id}}_condition_li" style="display:none">{{condition.name}}</li>
+                                {% endif %}
+
+                            {% endfor %}
+                        </ul>
+                        <button type="button" id="{{report.nct_id}}_condition_showBtn" class="btn waves-effect waves-light btn-secondary" style="padding: 4px;" onclick="showMoreAndLess('{{report.nct_id}}','condition')">Show more...</button>
+                    {% endif %}
+                </td>
+                <td>{{ report.phase }}</td>
+                <td>
+                    {% if report.interventions.all.count <= 4 %}
+                        <ul style="padding-inline-start: 10px;">
+                            {% for intervention in report.interventions.all %}
+                                <li>{{intervention.intervention_type}}:&nbsp;{{intervention.name}}</li>
+                            {% endfor %}
+                            </ul>
+                    {% else %}
+                        <ul style="padding-inline-start: 15px;">
+                            {% for intervention in report.interventions.all %}
+                                {% if forloop.counter <= 4 %}
+                                    <li>{{intervention.intervention_type}}:&nbsp;{{intervention.name}}</li>
+                                {% else %}
+                                    <li class="{{report.nct_id}}_intervention_li" style="display:none">{{intervention.intervention_type}}:&nbsp;{{intervention.name}}</li>
+                                {% endif %}
+
+                            {% endfor %}
+                        </ul>
+                        <button type="button" id="{{report.nct_id}}_intervention_showBtn" class="btn waves-effect waves-light btn-secondary" style="padding: 4px;" onclick="showMoreAndLess('{{report.nct_id}}','intervention')">Show more...</button>
+                    {% endif %}
+                    
+                </td>
+                <td>
+                    {% if report.facilities.all.count <= 4 %}
+                        <ul style="padding-inline-start: 10px;">
+                            {% for facility in report.facilities.all %}
+                                <li> <span class="centre_name">{{facility.name}}, {{facility.city}}, {{facility.state}}, {{facility.country}}</span></li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <ul style="padding-inline-start: 15px;">
+                            {% for facility in report.facilities.all %}
+                                {% if forloop.counter <= 4 %}
+                                    <li><span class="centre_name">{{facility.name}}, {{facility.city}}, {{facility.state}}, {{facility.country}}</span></li>
+                                {% else %}
+                                    <li class="{{report.nct_id}}_facility_li" style="display:none"><span class="centre_name">{{facility.name}}, {{facility.city}}, {{facility.state}}, {{facility.country}}</span></li>
+                                {% endif %}
+
+                            {% endfor %}
+                        </ul>
+                        <button type="button" id="{{report.nct_id}}_facility_showBtn" class="btn waves-effect waves-light btn-secondary" style="padding: 4px;" onclick="showMoreAndLess('{{report.nct_id}}','facility')">Show more...</button>
+                    {% endif %}
+                    
+                </td>
+                <td>{{ report.nct_id }}</td>
+                <td style="display:none">{{ report.related_detailed_descriptions.description }}</td>
+                <td style="display:none">{{ report.enrollment }}</td>
+                <td style="display:none">{{ report.calculated_values.number_of_facilities }}</td>
+                <td style="display:none">{{ report.eligibilities.criteria }}</td>
+                <td style="display:none">{{ report.start_month_year }}</td>
+                <td style="display:none">{{ report.completion_month_year }}</td>
+                <td>
+                    {% for provided_document in report.provided_documents.all %}
+                        <a target="_blank" href="{{provided_document.url}}"><i class="mr-2 mdi mdi-file-pdf"></i></a>
+                    {% endfor %}
+                </td>
+                <td style="display:none">{{ report.start_date }}</td>
+                <td style="display:none">{{ report.primary_completion_date }}</td>
+                <td style="display:none">{{ report.completion_date }}</td>
+                <td style="display:none">{{ report.study_first_posted_date }}</td>
+                <td style="display:none">{{ report.last_update_posted_date }}</td>
+                <td style="display:none">{{ report.eligibilities.gender }}</td>
+                <td style="display:none">{{ report.eligibilities.minimum_age }}</td>
+                <td style="display:none">{{ report.eligibilities.maximum_age }}</td>
+                <td style="display:none">
+                    {% for outcome_measure in report.outcome_measurements.all %}
+                        <span> {{ outcome_measure.title }} <br></span>
+                    {% endfor %}
+                </td>
+                <td style="display:none">
+                    {% for studies_sponsor in report.studies_sponsors.all %}
+                        <span>{{ studies_sponsor.name }} <br></span>
+                    {% endfor %}
+                </td>
+                <td style="display:none">{{ report.study_type}}</td>
+                <td>
+                    {% for funder_type in funder_types %}
+                        {% ifequal report.nct_id funder_type.nct_id %}
+                           {{ funder_type.funding }}
+                        {% endifequal %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    {% if reports.has_other_pages %}
+    <div class="pagination" style="float: right;">
+        <span class="step-links">
+            {% if reports.has_previous %}
+                <button class="btn btn-outline-success" onclick="search()">first</button>
+                <button class="btn btn-outline-success" onclick="search({{ reports.previous_page_number }})">previous</button>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ reports.number }} of {{ reports.paginator.num_pages }}.
+            </span>
+    
+            {% if reports.has_next %}
+                <button class="btn btn-outline-success" onclick="search({{ reports.next_page_number }})">next</button>
+                <button class="btn btn-outline-success" onclick="search({{ reports.paginator.num_pages }})">last</button>
+            {% endif %}
+        </span>
+    </div>
+    {% endif %}
+{% endif %}

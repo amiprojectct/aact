@@ -1,0 +1,904 @@
+{% extends "layouts/base.html" %}
+
+{% block extra_header %}
+<style>
+    body {
+        font: 16px Arial;  
+    }
+
+    /*the container must be positioned relative:*/
+    .autocomplete {
+        position: relative;
+        /* display: inline-block; */
+    }
+    .autocomplete-items {
+        position: absolute;
+        border: 1px solid #d4d4d4;
+        border-bottom: none;
+        border-top: none;
+        z-index: 99;
+        /*position the autocomplete items to be the same width as the container:*/
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+    .autocomplete-items div {
+        padding: 10px;
+        cursor: pointer;
+        background-color: #fff; 
+        border-bottom: 1px solid #d4d4d4; 
+    }
+    .autocomplete-items div:hover {
+       background-color: #e9e9e9; 
+    }
+    .autocomplete-active {
+        background-color: DodgerBlue !important; 
+        color: #ffffff; 
+    }
+
+    .accordion {
+        /* background-color: #272b34; */
+        /* color: #b2b9bf; */
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+        transition: 0.4s;
+        border-radius: 4px;
+    }
+
+    .active, .accordion:hover {
+        /* background-color: #2e3038; */
+    }
+
+    .accordion:after {
+        content: '\002B';
+        /* color: #777; */
+        font-weight: bold;
+        float: right;
+        margin-left: 5px;
+    }
+
+    .active:after {
+        content: "\2212";
+    }
+
+    .panel {
+        padding: 0 18px;
+        /* background-color: #272b34; */
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease-out;
+    }
+    .card {
+        margin-bottom: 15px;
+    }
+    button:focus {
+        outline: none;
+    }
+</style>
+{% endblock extra_header %}
+
+{% block content %}
+<div id="loader" style="display:none">
+    <div style="position: absolute;top: 0;left: 0;   right: 0;  bottom: 0; opacity: 0.3; background: white; z-index: 1000;" >
+    </div>
+    <div class="spinner-border text-info" role="status"  style="position: fixed;  top: 50%; left: 50%; z-index: 1001;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+
+<div class="row pt-5">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6"  style="text-align: center;">
+        <h1>Report Generator</h1>
+    </div>
+    <div class="col-lg-3" style="text-align: right;">
+        <button type="button" class="btn btn-outline-success" style="margin:1px" id="back" onclick="showPage(-1)" disabled="true">Back</button>
+        <button type="button" class="btn btn-outline-success" style="margin:1px" id="next" onclick="showPage(1)">Next</button>
+    </div>    
+</div>
+
+<div class="row mt-4 pt-4 mb-4 pb-4" id="page1"> 
+    <div class="col-sm-12 col-md-3 col-lg-3" style="display:''">
+        
+        <div class="card">
+            <div class="card-body pb-2">
+                <h6 class="card-subtitle">Condition or disease</h6>
+                <form class="mt-4">
+                    <div class="form-group">
+                        <div class="autocomplete">
+                            <input type="text" id="condition" class="form-control">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body pb-2">
+                <h6 class="card-subtitle">Other terms</h6>
+                <form class="mt-4">
+                    <div class="form-group">
+                        <input type="text" id="other_terms" class="form-control">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body pb-2">
+                <h6 class="card-subtitle">Country</h6>
+                <form class="mt-4">
+                    <div class="form-group">
+                        {% include "selectOption.html" %}
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <button class="accordion">Study Results</button>
+            <div class="panel">
+                <div class="card-body pb-2">
+                    <div class="">
+                        <input name="study_results" type="radio" class="with-gap material-inputs" id="radio_Result_All" checked>
+                        <label for="radio_Result_All" style="font-size: 18px;">All</label>
+                    </div>
+                    <div class="">
+                        <input name="study_results" type="radio" class="with-gap material-inputs" id="radio_With_Result">
+                        <label for="radio_With_Result" style="font-size: 18px;">With Results</label>
+                    </div>
+                    <div class="">
+                        <input name="study_results" type="radio" class="with-gap material-inputs" id="radio_Without_Result">
+                        <label for="radio_Without_Result" style="font-size: 18px;">Without Results</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <button class="accordion">Study Phase</button>
+            <div class="panel">
+                <div class="card-body pb-2">
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="early_phase_1">
+                        <label for="early_phase_1">Early Phase 1</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="phase_1">
+                        <label for="phase_1">Phase 1</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="phase_2">
+                        <label for="phase_2">Phase 2</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="phase_3">
+                        <label for="phase_3">Phase 3</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="phase_4">
+                        <label for="phase_4">Phase 4</label>
+                    </div><div class="">
+                        <input type="checkbox" class="material-inputs" id="not_applicable">
+                        <label for="not_applicable">Not Applicable</label>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <button class="accordion">Study Status</button>
+            <div class="panel">
+                <div class="card-body pb-2">
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="all_studies" checked onchange="onCheckStatus('all_studies')">
+                        <label for="all_studies">All Studies</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="not_yet_recruiting" onchange="onCheckStatus()">
+                        <label for="not_yet_recruiting">Not yet recruiting</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="recruiting" onchange="onCheckStatus()">
+                        <label for="recruiting">Recruiting</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="enrolling_by_invitation" onchange="onCheckStatus()">
+                        <label for="enrolling_by_invitation">Enrolling by invitation</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="active_not_recruiting" onchange="onCheckStatus()">
+                        <label for="active_not_recruiting">Active, not recruiting</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="suspended" onchange="onCheckStatus()">
+                        <label for="suspended">Suspended</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="terminated" onchange="onCheckStatus()">
+                        <label for="terminated">Terminated</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="completed" onchange="onCheckStatus()">
+                        <label for="completed">Completed</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="withdrawn" onchange="onCheckStatus()">
+                        <label for="withdrawn">Withdrawn</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="unknown_status" onchange="onCheckStatus()">
+                        <label for="unknown_status">Unknown status</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <button class="accordion">Funder Type</button>
+            <div class="panel">
+                <div class="card-body pb-2">
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="Funder_NIH" onchange="">
+                        <label for="Funder_NIH" style="font-size: 18px;">NIH</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="Funder_US_Fed" onchange="">
+                        <label for="Funder_US_Fed" style="font-size: 18px;">Other U.S. Federal agency</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="Funder_Industry" onchange="">
+                        <label for="Funder_Industry" style="font-size: 18px;">Industry</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="Funder_Other" onchange="">
+                        <label for="Funder_Other" style="font-size: 18px;">All Others(individulas, universities, organizations)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <button class="accordion">Study Documents</button>
+            <div class="panel">
+                <div class="card-body pb-2">
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="document_Protocols" onchange="">
+                        <label for="document_Protocols" style="font-size: 18px;">Study Protocols</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="document_SAPs" onchange="">
+                        <label for="document_SAPs" style="font-size: 18px;">Statistical Analysis Plans (SAPs)</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="document_ICFs" onchange="">
+                        <label for="document_ICFs" style="font-size: 18px;">Informed Consent Forms (ICFs)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-around mb-4">
+            <button type="button" class="btn waves-effect waves-light btn-secondary" style="width: 40%;" onclick="search()">Search</button>
+            <button type="button" class="btn waves-effect waves-light btn-secondary" style="width: 40%;" onclick="clearPagel()">Clear</button>
+        </div>
+        <div class="d-flex justify-content-around mb-4">
+            <button type="button" class="btn waves-effect waves-light btn-primary" style="width: 90%;" onclick="generateExcelFile()">Export To Excel</button>
+        </div>
+    </div>
+    
+    <div class="col-sm-12 col-md-9 col-lg-9" id="studies_table">
+        {% include "tables/studiesTable.html" %}
+    </div>
+</div>
+<div class="row mt-4 pt-4" id="page2" style="display:none">
+    <div class="row" style="width:100%; margin: 15px;">
+        
+        <div class="col-sm-12 col-md-3 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="hypothesis_checkbox">
+                        <label for="hypothesis_checkbox">Hypothesis</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="inclusion_criteria_checkbox">
+                        <label for="inclusion_criteria_checkbox">Inclusion criteria</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="exclusion_criteria_checkbox">
+                        <label for="exclusion_criteria_checkbox">Exclusion criteria</label>
+                    </div>
+                    <div class="">
+                        <input type="checkbox" class="material-inputs" id="individual_ARR_checkbox">
+                        <label for="individual_ARR_checkbox">Individual ARR</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="pb-2">
+                        <label class="mr-sm-2" for="ARR_Select">ARR</label>
+                        <select class="custom-select mr-sm-2" id="ARR_Select" onchange="changeARR()">
+                            <option value="ARR_median" selected="">ARR median</option>
+                            <option value="ARR_for_common_centres">ARR for common centres</option>
+                            <option value="ARR_range">ARR range</option>
+                        </select>
+                    </div>
+                    <h5 style="margin: 0px;">Result: <span id="result"></span></h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-3 col-lg-3">
+            <div class="d-flex justify-content-around mb-4">
+                <button type="button" class="btn waves-effect waves-light btn-secondary" style="width: 40%;" onclick="apply()">Apply</button>
+                <button type="button" class="btn waves-effect waves-light btn-secondary" style="width: 40%;" onclick="clearPage2()">Cancel</button>
+            </div>
+            <div class="d-flex justify-content-around mb-4">
+                <button type="button" class="btn waves-effect waves-light btn-primary" style="width: 90%;" onclick="generateExcelFileForPage2()">Export To Excel</button>
+            </div>
+        </div>
+        
+    </div>
+    <div class="row" style="width:100%;margin: 15px;">
+        <div id="reportTable"  style="width:100%;">
+        </div>
+    </div>
+</div>
+<div class="row mt-4 pt-4" id="page3" style="display:none"></div>
+
+{% endblock content %}
+
+{% block extra_script %}
+
+<script type="text/javascript">
+    var ARR_Median = 0;
+    var ARR_Range = '';
+    var ARR_FCC = [];
+    var selectedRecords = [];
+    
+
+    function clearPagel() {
+        // coditions key word
+        document.getElementById('condition').value="";
+        // other terms
+        document.getElementById("other_terms").value="";
+        // country
+        document.getElementById("selectCounty").value = "";
+        // study phase
+        document.getElementById('early_phase_1').checked = false;
+        document.getElementById('phase_1').checked = false;
+        document.getElementById('phase_2').checked = false;
+        document.getElementById('phase_3').checked = false;
+        document.getElementById('phase_4').checked = false;
+        document.getElementById('not_applicable').checked = false;
+        // status
+        document.getElementById('all_studies').checked = true;
+        document.getElementById('not_yet_recruiting').checked = false;
+        document.getElementById('recruiting').checked = false;
+        document.getElementById('enrolling_by_invitation').checked = false;
+        document.getElementById('active_not_recruiting').checked = false;
+        document.getElementById('suspended').checked = false;
+        document.getElementById('terminated').checked = false;
+        document.getElementById('completed').checked = false;
+        document.getElementById('withdrawn').checked = false;
+        document.getElementById('unknown_status').checked = false;
+        // result
+        document.getElementById('radio_Result_All').checked = true;
+        document.getElementById('radio_With_Result').checked = false;
+        document.getElementById('radio_Without_Result').checked = false;
+        // document
+        document.getElementById('document_Protocols').checked = false;
+        document.getElementById('document_SAPs').checked = false;
+        document.getElementById('document_ICFs').checked = false;
+        // funder
+        document.getElementById('Funder_NIH').checked = false;
+        document.getElementById('Funder_Industry').checked = false;
+        document.getElementById('Funder_Other').checked = false;
+        document.getElementById('Funder_US_Fed').checked = false;
+
+        $('#studies_table').html("");
+    }
+    function search(page=1) {
+        // coditions key word
+        var condition = document.getElementById('condition').value;
+        
+        // other terms
+        var other_terms = document.getElementById("other_terms").value;
+        
+        // get country
+        var selectCountry = document.getElementById("selectCounty");
+        var countryStr = selectCountry.options[selectCountry.selectedIndex].text;
+
+        // study phase
+        var early_phase_1 = document.getElementById('early_phase_1').checked;
+        var phase_1 = document.getElementById('phase_1').checked;
+        var phase_2 = document.getElementById('phase_2').checked;
+        var phase_3 = document.getElementById('phase_3').checked;
+        var phase_4 = document.getElementById('phase_4').checked;
+        var not_applicable = document.getElementById('not_applicable').checked ;
+        
+        // status
+        var not_yet_recruiting = document.getElementById('not_yet_recruiting').checked;
+        var recruiting = document.getElementById('recruiting').checked;
+        var enrolling_by_invitation = document.getElementById('enrolling_by_invitation').checked;
+        var active_not_recruiting = document.getElementById('active_not_recruiting').checked;
+        var suspended = document.getElementById('suspended').checked;
+        var terminated = document.getElementById('terminated').checked;
+        var completed = document.getElementById('completed').checked;
+        var withdrawn = document.getElementById('withdrawn').checked;
+        var unknown_status = document.getElementById('unknown_status').checked;
+
+        // result
+        var radio_Result_All = document.getElementById('radio_Result_All').checked;
+        var radio_With_Result = document.getElementById('radio_With_Result').checked;
+        var radio_Without_Result = document.getElementById('radio_Without_Result').checked;
+
+        // document
+        var document_Protocols = document.getElementById('document_Protocols').checked;
+        var document_SAPs = document.getElementById('document_SAPs').checked;
+        var document_ICFs = document.getElementById('document_ICFs').checked;
+
+        // funder
+
+        var Funder_NIH = document.getElementById('Funder_NIH').checked;
+        var Funder_Industry = document.getElementById('Funder_Industry').checked;
+        var Funder_Other = document.getElementById('Funder_Other').checked;
+        var Funder_US_Fed = document.getElementById('Funder_US_Fed').checked;
+        showLoad();
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getStudies' %}",
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                page: page,
+                // condition
+                condition: condition,
+                // country
+                country: countryStr,
+                // other terms
+                otherTerms: other_terms,
+                // study phase
+                early_phase_1: early_phase_1,
+                phase_1: phase_1,
+                phase_2: phase_2,
+                phase_3: phase_3,
+                phase_4: phase_4,
+                not_applicable: not_applicable,
+                // status
+                not_yet_recruiting: not_yet_recruiting,
+                recruiting: recruiting,
+                enrolling_by_invitation: enrolling_by_invitation,
+                active_not_recruiting: active_not_recruiting,
+                suspended: suspended,
+                terminated: terminated,
+                completed: completed,
+                withdrawn: withdrawn,
+                unknown_status: unknown_status,
+                // results
+                with_Result: radio_With_Result,
+                without_Result:radio_Without_Result,
+                // documents
+                document_Protocols: document_Protocols,
+                document_SAPs: document_SAPs,
+                document_ICFs: document_ICFs,
+                // funder
+                Funder_NIH: Funder_NIH,
+                Funder_Industry: Funder_Industry,
+                Funder_Other: Funder_Other,
+                Funder_US_Fed: Funder_US_Fed,
+
+            },
+            success: function (response) {
+                hideLoad();
+                $('#studies_table').html(response);
+                
+            },
+            error: function (response) {
+                console.log(response);
+                hideLoad();
+            }
+        })
+    }
+
+    function autocomplete(inp) {
+        /*the autocomplete function takes two arguments,
+        the text field element and an array of possible autocompleted values:*/
+        var currentFocus;
+        /*execute a function when someone writes in the text field:*/
+        inp.addEventListener("input", function(e) {
+            var a, b, i, val = this.value;
+            /*close any already open lists of autocompleted values*/
+            closeAllLists();
+            if (!val) { return false;}
+            currentFocus = -1;
+            /*create a DIV element that will contain the items (values):*/
+            if(val.length > 2) {
+                $.ajax({
+                    type: 'GET',
+                    url: "{% url 'getConditionTerms' %}",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        cond: val,
+                    },
+                    success: function (response) {
+                        console.log(response['cond']);
+                        var conditions = response['cond'];
+                        a = document.createElement("DIV");
+                        a.setAttribute("id", this.id + "autocomplete-list");
+                        a.setAttribute("class", "autocomplete-items");
+                        /*append the DIV element as a child of the autocomplete container:*/
+                        document.getElementById("condition").parentNode.appendChild(a);
+                        /*for each item in the array...*/
+                        for (i = 0; i < conditions.length; i++) {
+                            /*check if the item starts with the same letters as the text field value:*/
+                            if (conditions[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                                /*create a DIV element for each matching element:*/
+                                b = document.createElement("DIV");
+                                /*make the matching letters bold:*/
+                                b.innerHTML = "<strong>" + conditions[i].substr(0, val.length) + "</strong>";
+                                b.innerHTML += conditions[i].substr(val.length);
+                                /*insert a input field that will hold the current array item's value:*/
+                                b.innerHTML += "<input type='hidden' value='" + conditions[i] + "'>";
+                                /*execute a function when someone clicks on the item value (DIV element):*/
+                                b.addEventListener("click", function(e) {
+                                    /*insert the value for the autocomplete text field:*/
+                                    inp.value = this.getElementsByTagName("input")[0].value;
+                                    /*close the list of autocompleted values,
+                                    (or any other open lists of autocompleted values:*/
+                                    closeAllLists();
+                                });
+                            a.appendChild(b);
+                            }
+                        }
+
+                    },
+                    error: function (response) {
+                        console.log(response);
+                    }
+                });
+            } else{
+                closeAllLists();
+            }
+            
+        });
+        /*execute a function presses a key on the keyboard:*/
+        inp.addEventListener("keydown", function(e) {
+            var x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) {
+                /*If the arrow DOWN key is pressed,
+                increase the currentFocus variable:*/
+                currentFocus++;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 38) { //up
+                /*If the arrow UP key is pressed,
+                decrease the currentFocus variable:*/
+                currentFocus--;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 13) {
+                /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                e.preventDefault();
+                if (currentFocus > -1) {
+                /*and simulate a click on the "active" item:*/
+                if (x) x[currentFocus].click();
+                }
+            }
+        });
+        function addActive(x) {
+            /*a function to classify an item as "active":*/
+            if (!x) return false;
+            /*start by removing the "active" class on all items:*/
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            /*add class "autocomplete-active":*/
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+        function removeActive(x) {
+            /*a function to remove the "active" class from all autocomplete items:*/
+            for (var i = 0; i < x.length; i++) {
+            x[i].classList.remove("autocomplete-active");
+            }
+        }
+        function closeAllLists(elmnt) {
+            /*close all autocomplete lists in the document,
+            except the one passed as an argument:*/
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != inp) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        }
+        /*execute a function when someone clicks in the document:*/
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+
+    function selectStudyAll(checkBox) {
+        if(checkBox.checked == true) {
+            console.log("checked");
+            var rows = document.getElementById("studiesTable").rows;
+            for (let index = 1; index < rows.length; index++) {
+                const row = rows[index];
+                removeSelectedStudy(row);
+                var selectedTd = row.getElementsByTagName("td")[1];
+                addSelectStudy(row, true);
+            }
+            
+        } else {
+            console.log("unchecked");
+            var rows = document.getElementById("studiesTable").rows;
+            for (let index = 1; index < rows.length; index++) {
+                const row = rows[index];
+                var selectedTds = row.getElementsByTagName("td");
+                var studyNCT = selectedTds[8].innerHTML;
+                removeSelectedStudy(row);
+                document.getElementById(studyNCT).checked = false;
+            }
+        }
+
+    }
+
+    function addSelectStudy(selectedRow, checked=null) {
+        var selectedTds = selectedRow.getElementsByTagName("td");
+
+        // description
+        var description = selectedTds[9].innerHTML;
+        var patients = selectedTds[10].innerHTML;
+        var centres = selectedTds[11].innerHTML;
+        var criteria = selectedTds[12].innerHTML;
+        var start = selectedTds[13].innerHTML;
+        var end = selectedTds[14].innerHTML;
+        var studyNCT = selectedTds[8].innerHTML;
+
+        var Hypothesis = getHypothesis(description);
+        var InclusionCriteria = getInclusionCriteria(criteria);
+        var EnclusionCriteria = getExclusionCriteria(criteria);
+        var arr = getARR(patients, centres, start, end);
+        var studyStatus = selectedTds[2].innerHTML;
+        var studyTitle = selectedTds[3].textContent.trim();
+        var studyConditions = selectedTds[4].textContent.trim();
+        var studyPhase = selectedTds[5].innerHTML;
+        var studyIntervention_ULs = selectedTds[6].getElementsByTagName('ul');
+        var studyInterventions = '';
+        if(studyIntervention_ULs.length > 0) {
+            studyInterventions = studyIntervention_ULs[studyIntervention_ULs.length - 1].textContent.trim();
+        }
+        var studyLocation_ULs = selectedTds[7].getElementsByTagName('ul');
+        var studyLocations = '';
+        if(studyLocation_ULs.length > 0) {
+            studyLocations = studyLocation_ULs[studyLocation_ULs.length - 1].textContent.trim();
+        }
+        var study_url = "https://clinicaltrials.gov/ct2/show/" + studyNCT;
+        var start_date = selectedTds[15].innerHTML;
+        var primary_completion_date = selectedTds[16].innerHTML;
+        var completion_date = selectedTds[17].innerHTML;
+        var study_first_posted_date = selectedTds[18].innerHTML;
+        var last_update_posted_date = selectedTds[19].innerHTML;
+        var gender = selectedTds[20].innerHTML;
+        var minimum_age = selectedTds[21].innerHTML;
+        var maximum_age = selectedTds[21].innerHTML;
+        var outcome_measures = selectedTds[22].textContent.trim();
+        var studies_sponsors = selectedTds[23].textContent.trim();
+        var study_type = selectedTds[24].innerHTML;
+        var record = {
+            nct_id: studyNCT,
+            Hypothesis: Hypothesis,
+            InclusionCriteria: InclusionCriteria,
+            EnclusionCriteria: EnclusionCriteria,
+            Arr: arr,
+            Patients: patients,
+            Start: start,
+            End: end,
+            studyStatus: studyStatus,
+            studyTitle:studyTitle,
+            studyConditions: studyConditions,
+            studyPhase: studyPhase,
+            studyInterventions: studyInterventions,
+            studyLocations: studyLocations,
+            study_url: study_url,
+            start_date: start_date,
+            primary_completion_date: primary_completion_date,
+            completion_date: completion_date,
+            study_first_posted_date: study_first_posted_date,
+            last_update_posted_date: last_update_posted_date,
+            gender: gender,
+            minimum_age: minimum_age,
+            maximum_age: maximum_age,
+            outcome_measures: outcome_measures,
+            studies_sponsors: studies_sponsors,
+            study_type: study_type,
+            studyLocation_ULs: studyLocation_ULs,
+        }
+        //add to array
+        selectedRecords.push(record);
+
+        if(checked == null) {
+            return;
+        }
+        
+        document.getElementById(studyNCT).checked = checked;
+    }
+
+    function removeSelectedStudy(selectedRow) {
+        var selectedTds = selectedRow.getElementsByTagName("td");
+
+        // description
+        var del_index = -1;
+        var studyNCT = selectedTds[8].innerHTML;
+        console.log(studyNCT);
+        for (let index = 0; index < selectedRecords.length; index++) {
+            const element = selectedRecords[index];
+            if(element.nct_id.localeCompare(studyNCT) == 0) {
+                del_index = index;
+                break;
+            }
+        }
+        if(del_index > -1) {
+            selectedRecords.splice(del_index, 1);
+        }
+        return
+    }
+
+    function selectStudy(checkBox, trID) {
+        var rows = document.getElementById("studiesTable").rows;
+        var selectedRow = rows[trID];
+        
+        if (checkBox.checked == true) {
+            console.log("checked");
+            addSelectStudy(selectedRow);
+
+        } else {
+            console.log('unchecked');
+            removeSelectedStudy(selectedRow);
+        }
+    }
+
+    autocomplete(document.getElementById("condition"));
+
+    
+    function apply() {
+        generateTableOfPage2(selectedRecords)
+    }
+
+    function clearPage2() {
+        selectedRecords = [];
+        ARR_FCC = [];
+        apply();
+        document.getElementById("reportTable").innerHTML = "";
+    }
+
+    function generateTableOfPage2(records) {
+        
+        var hypothesis_checkbox = document.getElementById("hypothesis_checkbox").checked;
+        var inclusion_criteria_checkbox = document.getElementById("inclusion_criteria_checkbox").checked;
+        var exclusion_criteria_checkbox = document.getElementById("exclusion_criteria_checkbox").checked;
+        var individual_ARR_checkbox = document.getElementById("individual_ARR_checkbox").checked;
+
+        var checkbox_all = !(hypothesis_checkbox || inclusion_criteria_checkbox || exclusion_criteria_checkbox || individual_ARR_checkbox);
+
+        var innerHTMLText = "<table class=\"table table-bordered\" style=\"font-size: 16px;\">" +
+                "<thead>" +
+                    "<tr>" +
+                        "<th>Row</th>" +
+                        "<th>NCT ID</th>";
+        if(hypothesis_checkbox || checkbox_all) {
+            innerHTMLText += "<th>Hypothesis</th>";
+        }
+        if(inclusion_criteria_checkbox || checkbox_all) {
+            innerHTMLText += "<th>Inclusion Criteria</th>";
+        }
+        if(exclusion_criteria_checkbox || checkbox_all) {
+            innerHTMLText += "<th>Exclusion Criteria</th>";
+        }
+        if(individual_ARR_checkbox || checkbox_all) {
+            innerHTMLText += "<th>ARR</th>";
+        }
+        innerHTMLText += "</tr></thead><tbody>";
+        ARR_Median = 0;
+        var ARR_min = 0, ARR_max = 0;
+        for (var i = 0; i < records.length; i++ ) {
+
+            if(records[i].studyLocation_ULs.length > 0) {
+                var locations = records[i].studyLocation_ULs[0].getElementsByClassName('centre_name');
+                if (parseFloat(records[i].Arr).toString() == 'NaN') {
+                    addLocations(locations,0);    
+                } else {
+                    addLocations(locations,parseFloat(records[i].Arr).toFixed(3));
+                }
+            }
+            var item_arr =  parseFloat(records[i].Arr);
+            
+            if(item_arr.toString() != "NaN") {
+                console.log(item_arr);
+                ARR_Median += item_arr;
+
+                if(ARR_max == 0) {
+                    ARR_max = item_arr.toFixed(3);
+                    ARR_min = item_arr.toFixed(3);
+                } else {
+                    if(ARR_min >  item_arr) {
+                        ARR_min = item_arr.toFixed(3);
+                        console.log(ARR_min);
+                    }
+                    if(ARR_max < item_arr) {
+                        ARR_max = item_arr.toFixed(3);
+                        console.log(ARR_max);
+                    }
+                }
+                
+            }
+
+            item = records[i];
+            innerHTMLText += "<tr>";
+            var row = i + 1;
+            innerHTMLText += "<td>" + row + "</td>";
+            innerHTMLText += "<td>" + item.nct_id + "</td>";
+            if(hypothesis_checkbox || checkbox_all) {
+                innerHTMLText += "<td>" + item.Hypothesis + "</td>";
+            }
+            if(inclusion_criteria_checkbox || checkbox_all) {
+                var InclusionCriteria = item.InclusionCriteria.trim().replaceAll('\n', "<br>");
+                innerHTMLText += generateInsertHtmlOfCriteria(InclusionCriteria, item.nct_id, 'inclusionCriteria');
+            }
+            if(exclusion_criteria_checkbox || checkbox_all) {
+                var EnclusionCriteria = item.EnclusionCriteria.trim().replaceAll('\n', "<br>");
+                innerHTMLText += generateInsertHtmlOfCriteria(EnclusionCriteria, item.nct_id, 'enclusionCriteria');
+            }
+            if(individual_ARR_checkbox || checkbox_all) {
+                var item_arr =  parseFloat(records[i].Arr);
+            
+                if(item_arr.toString() != "NaN") {
+                    innerHTMLText += "<td>" + item_arr.toFixed(3) + "<br> patients = " + item.Patients + "<br> start date:" + item.Start + "<br> end date:" + item.End + "</td>";
+                }
+                else {
+                    innerHTMLText += "<td>" + item.Arr + "</td>";
+                }
+            }
+            innerHTMLText += "</tr>";
+        }
+
+        if(records.length > 0) {
+            ARR_Median = (ARR_Median / records.length).toFixed(3);
+        }
+        innerHTMLText += "</tbody></table>"
+
+        document.getElementById("reportTable").innerHTML = innerHTMLText;
+        ARR_Range = ARR_min + ' - ' + ARR_max;
+        changeARR();
+        // document.getElementById('result').innerText = ARR_Range;
+    }
+    
+    function changeARR() {
+        var x = document.getElementById("ARR_Select").value;
+        if(x == "ARR_median") {
+            document.getElementById('result').innerText = ARR_Median;
+        } else if (x == "ARR_range") {
+            document.getElementById('result').innerText = ARR_Range;
+        } else if (x == 'ARR_for_common_centres') {
+            document.getElementById('result').innerText = generate_ARR_for_common_centres_result();
+        }
+    }
+    var acc = document.getElementsByClassName("accordion");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+            } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+    }
+</script>
+
+{% endblock extra_script %}
