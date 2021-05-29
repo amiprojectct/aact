@@ -696,6 +696,7 @@
             Patients: patients,
             Start: start,
             End: end,
+            Centres: centres, 
             studyStatus: studyStatus,
             studyTitle:studyTitle,
             studyConditions: studyConditions,
@@ -855,7 +856,7 @@
                 var item_arr =  parseFloat(records[i].Arr);
             
                 if(item_arr.toString() != "NaN") {
-                    innerHTMLText += "<td>" + item_arr.toFixed(3) + "<br> patients = " + item.Patients + "<br> start date:" + item.Start + "<br> end date:" + item.End + "</td>";
+                    innerHTMLText += "<td>" + item_arr.toFixed(3) + "<br> patients = " + item.Patients + "<br> start date:" + item.Start + "<br> end date:" + item.End + "<br> centres:" + item.Centres + "</td>";
                 }
                 else {
                     innerHTMLText += "<td>" + item.Arr + "</td>";
