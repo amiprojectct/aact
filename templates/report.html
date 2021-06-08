@@ -94,7 +94,7 @@
 <div class="row pt-5">
     <div class="col-lg-3"></div>
     <div class="col-lg-6"  style="text-align: center;">
-        <h1>CT Metric Reporter</h1>
+        <h1>Report Generator</h1>
     </div>
     <div class="col-lg-3" style="text-align: right;">
         <button type="button" class="btn btn-outline-success" style="margin:1px" id="back" onclick="showPage(-1)" disabled="true">Back</button>
@@ -397,7 +397,7 @@
         document.getElementById('Funder_Other').checked = false;
         document.getElementById('Funder_US_Fed').checked = false;
 
-        $('#studies_table').html("");
+        $('#studies_table').html("Please search for results");
     }
     function search(page=1) {
         // coditions key word
@@ -696,7 +696,6 @@
             Patients: patients,
             Start: start,
             End: end,
-            Centres: centres, 
             studyStatus: studyStatus,
             studyTitle:studyTitle,
             studyConditions: studyConditions,
@@ -856,7 +855,7 @@
                 var item_arr =  parseFloat(records[i].Arr);
             
                 if(item_arr.toString() != "NaN") {
-                    innerHTMLText += "<td>" + item_arr.toFixed(3) + "<br> patients = " + item.Patients + "<br> start date:" + item.Start + "<br> end date:" + item.End + "<br> centres:" + item.Centres + "</td>";
+                    innerHTMLText += "<td>" + item_arr.toFixed(3) + "<br> patients = " + item.Patients + "<br> start date:" + item.Start + "<br> end date:" + item.End + "</td>";
                 }
                 else {
                     innerHTMLText += "<td>" + item.Arr + "</td>";
@@ -900,6 +899,7 @@
             } 
         });
     }
+    clearPagel();
 </script>
 
 {% endblock extra_script %}
