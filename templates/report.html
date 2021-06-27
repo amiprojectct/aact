@@ -323,6 +323,7 @@
                             <option value="ARR_median" selected="">ARR median</option>
                             <option value="ARR_for_common_centres">ARR for common centres</option>
                             <option value="ARR_range">ARR range</option>
+                            <option value="ARR_CSPBC">ARR Count of Studies performed by centre</option>
                         </select>
                     </div>
                     <h5 style="margin: 0px;">Result: <span id="result"></span></h5>
@@ -399,6 +400,7 @@
 
         $('#studies_table').html("Please search for results");
     }
+
     function search(page=1) {
         // coditions key word
         var condition = document.getElementById('condition').value;
@@ -787,7 +789,8 @@
                 "<thead>" +
                     "<tr>" +
                         "<th>Row</th>" +
-                        "<th>NCT ID</th>";
+                        "<th>NCT ID</th>" +
+                        "<th>Study Title</th>";
         if(hypothesis_checkbox || checkbox_all) {
             innerHTMLText += "<th>Hypothesis</th>";
         }
@@ -840,6 +843,7 @@
             var row = i + 1;
             innerHTMLText += "<td>" + row + "</td>";
             innerHTMLText += "<td>" + item.nct_id + "</td>";
+            innerHTMLText += "<td><a target=\"_blank\" href=\"https://clinicaltrials.gov/ct2/show/"+item.nct_id +"\">" + item.studyTitle + "</a></td>";
             if(hypothesis_checkbox || checkbox_all) {
                 innerHTMLText += "<td>" + item.Hypothesis + "</td>";
             }
@@ -883,8 +887,11 @@
             document.getElementById('result').innerText = ARR_Range;
         } else if (x == 'ARR_for_common_centres') {
             document.getElementById('result').innerText = generate_ARR_for_common_centres_result();
+        } else if (x == 'ARR_CSPBC') {
+            document.getElementById('result').innerText = generate_ARR_CSPBC();
         }
     }
+    
     var acc = document.getElementsByClassName("accordion");
     var i;
 
