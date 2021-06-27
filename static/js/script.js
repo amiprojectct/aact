@@ -183,6 +183,10 @@ function generateExcelFile() {
         {"text":"Sponsors"},
         {"text":"Study type"},
     ]];
+    if(selectedRecords.length <= 0) {
+        alert("Please select which studies you would like to export");
+        return;
+    }
     for (let index = 0; index < selectedRecords.length; index++) {
         const element = selectedRecords[index];
         var selectedTableRecord = [];
@@ -223,22 +227,33 @@ function generateExcelFileForPage2() {
     };
     var selectedRecordsTable2 = [[
         {"text":"NCT ID"},
+        {"text":"Study Title"},
         {"text":"Hypothesis"},
         {"text":"Inclusion Criteria"},
         {"text":"Exclusion Criteria"},
-        {"text":"IARR"}
+        {"text":"IARR"},
+        {"text":"URL"}
     ]];
+    if(selectedRecords.length <= 0) {
+        alert("Please select which studies you would like to export");
+        return;
+    }
     for (let index = 0; index < selectedRecords.length; index++) {
         const element = selectedRecords[index];
         var recordTable2 = [];
-        recordTable2.push({"text":element.nct_id})
-        recordTable2.push({"text":element.Hypothesis.replaceAll('<br>', "\n")})
-        recordTable2.push({"text":element.InclusionCriteria.trim()})
-        recordTable2.push({"text":element.EnclusionCriteria.trim()})
-        recordTable2.push({"text":element.Arr})
+        recordTable2.push({"text":element.nct_id});
+        recordTable2.push({"text":element.studyTitle});
+        recordTable2.push({"text":element.Hypothesis.replaceAll('<br>', "\n")});
+        recordTable2.push({"text":element.InclusionCriteria.trim()});
+        recordTable2.push({"text":element.EnclusionCriteria.trim()});
+        recordTable2.push({"text":element.Arr});
+        recordTable2.push({"text": "https://clinicaltrials.gov/ct2/show/"+element.nct_id});
         selectedRecordsTable2.push(recordTable2);
     }
-
+    var extra_excelData = [];
+    extra_excelData.push({"text":"ARR Median: " + ARR_Median});
+    extra_excelData.push({"text":"ARR Range: " + ARR_Range});
+    selectedRecordsTable2.push(extra_excelData);
     var table2Data = [
         {
             "sheetName": "Sheet1",
@@ -332,6 +347,21 @@ function generate_ARR_for_common_centres_result() {
         retStr += element.name;
         retStr += " : ";
         retStr += parseFloat(element.value/element.count).toFixed(3);
+    }
+    return retStr;
+}
+
+function generate_ARR_CSPBC() {
+    var retStr = "";
+    for (let i = 0; i < ARR_FCC.length; i++) {
+        const element = ARR_FCC[i];
+        if(element.count <=1 || element.name == "None" ) {
+            continue;
+        }
+        retStr += "\n";
+        retStr += element.name;
+        retStr += " : ";
+        retStr += element.count;
     }
     return retStr;
 }
