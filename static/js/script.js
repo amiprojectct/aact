@@ -439,5 +439,8 @@ function generate_ARR_CSPBC() {
         retStr += " : ";
         retStr += element.count;
     }
+    if (retStr == "") {
+        retStr = "Could not find total centres."
+    }
     return retStr;
 }
