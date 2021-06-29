@@ -263,6 +263,82 @@ function generateExcelFileForPage2() {
     Jhxlsx.export(table2Data, options);
 }
 
+function generateExcelFileForAll() {
+    var options = {
+        fileName: "Studies' Data"
+    };
+    var selectedRecordsTable1 =  [[
+        {"text":"Status"},
+        {"text":"Study Title"},
+        {"text":"Conditions"},
+        {"text":"Phase"},
+        {"text":"Interventions"},
+        {"text":"Locations"},
+        {"text":"NCT ID"},
+        {"text":"Enrollment"},
+        {"text":"URL"},
+        {"text":"Start Date"},
+        {"text":"Primary Completion Date"},
+        {"text":"Completion Date"},
+        {"text":"Study First Posted Date"},
+        {"text":"Last Update Posted Date"},
+        {"text":"Gender"},
+        {"text":"Minimum Age"},
+        {"text":"Maximum Age"},
+        {"text":"Outcome Measures"},
+        {"text":"Sponsors"},
+        {"text":"Study type"},
+        {"text":"Hypothesis"},
+        {"text":"Inclusion Criteria"},
+        {"text":"Exclusion Criteria"},
+        {"text":"IARR"},
+    ]];
+    if(selectedRecords.length <= 0) {
+        alert("Please select which studies you would like to export");
+        return;
+    }
+    for (let index = 0; index < selectedRecords.length; index++) {
+        const element = selectedRecords[index];
+        var selectedTableRecord = [];
+        selectedTableRecord.push({"text": element.studyStatus});
+        selectedTableRecord.push({"text": element.studyTitle});
+        selectedTableRecord.push({"text": element.studyConditions});
+        selectedTableRecord.push({"text": element.studyPhase});
+        selectedTableRecord.push({"text": element.studyInterventions});
+        selectedTableRecord.push({"text": element.studyLocations});
+        selectedTableRecord.push({"text": element.nct_id});
+        selectedTableRecord.push({"text": element.Patients});
+        selectedTableRecord.push({"text": element.study_url});
+        selectedTableRecord.push({"text": element.start_date});
+        selectedTableRecord.push({"text": element.primary_completion_date});
+        selectedTableRecord.push({"text": element.completion_date});
+        selectedTableRecord.push({"text": element.study_first_posted_date});
+        selectedTableRecord.push({"text": element.last_update_posted_date});
+        selectedTableRecord.push({"text": element.gender});
+        selectedTableRecord.push({"text": element.minimum_age});
+        selectedTableRecord.push({"text": element.maximum_age});
+        selectedTableRecord.push({"text": element.outcome_measures});
+        selectedTableRecord.push({"text": element.studies_sponsors});
+        selectedTableRecord.push({"text": element.study_type});
+        selectedTableRecord.push({"text": element.Hypothesis.replaceAll('<br>', "\n")});
+        selectedTableRecord.push({"text": element.InclusionCriteria.trim()});
+        selectedTableRecord.push({"text": element.EnclusionCriteria.trim()});
+        selectedTableRecord.push({"text": element.Arr});
+        selectedRecordsTable1.push(selectedTableRecord);
+    }
+    var extra_excelData = [];
+    extra_excelData.push({"text":"ARR Median: " + ARR_Median});
+    extra_excelData.push({"text":"ARR Range: " + ARR_Range});
+    selectedRecordsTable1.push(extra_excelData);
+    var table1Data = [
+        {
+            "sheetName": "Sheet1",
+            "data": selectedRecordsTable1
+        }
+    ];
+    Jhxlsx.export(table1Data, options);
+}
+
 function onCheckStatus(id=null) {
     var not_yet_recruiting = document.getElementById('not_yet_recruiting').checked;
     var recruiting = document.getElementById('recruiting').checked;
