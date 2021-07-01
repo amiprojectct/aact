@@ -440,7 +440,7 @@ function generate_ARR_CSPBC() {
         retStr += element.count;
     }
     if (retStr == "") {
-        retStr = "Total  count of studies performed by centres (selected studies)"
+        retStr = "Could not find total centres."
     }
     return retStr;
 }
